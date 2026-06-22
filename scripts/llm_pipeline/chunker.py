@@ -9,8 +9,9 @@ def get_tokenizer(model_name: str = "cl100k_base"):
     try:
         return tiktoken.get_encoding(model_name)
     except Exception:
-        # 默认回退到 OpenAI 标准 cl100k_base 分词器
-        return tiktoken.get_encoding("cl100k_base")
+        if model_name != "cl100k_base":
+            return tiktoken.get_encoding("cl100k_base")
+        raise Exception("无法初始化分词器")
 
 def count_tokens(text: str, tokenizer) -> int:
     return len(tokenizer.encode(text, disallowed_special=()))

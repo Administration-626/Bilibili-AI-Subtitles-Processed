@@ -8,10 +8,10 @@ description: B站视频字幕/语音转文字工作流。当用户需要整理B�
 ## 工作流概览
 
 ```
-有B站AI字幕  →  路径 A：浏览器插件下载字幕 → scripts/extract_subtitles.py → transcripts/
-无字幕/字幕差 →  路径 B：浏览器插件下载音频 → scripts/asr_transcribe.py  → transcripts/
+有B站AI字幕  →  路径 A：浏览器插件下载字幕 → scripts/extract_subtitles.py → ./ (当前目录)
+无字幕/字幕差 →  路径 B：浏览器插件下载音频 → scripts/asr_transcribe.py  → 用户指定路径
                                                         ↓
-                                           直接在 agent 会话里说「整理 transcripts/xxx.txt」
+                                           直接在 agent 会话里说「整理 xxx_extracted.txt」
                                                         ↓
                                                    notes/整理稿.md
 ```

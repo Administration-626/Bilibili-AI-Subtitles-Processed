@@ -43,6 +43,8 @@ class Segment:
 # ── 时间格式化 ────────────────────────────────────────────────────────────────
 
 def fmt_time(sec: float) -> str:
+    if sec is None:
+        return "00:00"
     s = int(sec)
     h, m, s = s // 3600, (s % 3600) // 60, s % 60
     return f"{h:02d}:{m:02d}:{s:02d}" if h else f"{m:02d}:{s:02d}"
@@ -274,6 +276,10 @@ def process(src: Path, dst: Path, keep_timestamp: bool, force: bool, gap: float)
         return
 
     segs   = parse(src)
+    if not segs:
+        print(f"  警告：提取内容为空，跳过文件：{src.name}")
+        return
+        
     segs   = dedup(segs)
     groups = segment(segs, gap)
     text   = render(groups, keep_timestamp)

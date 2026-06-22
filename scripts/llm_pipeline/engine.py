@@ -39,8 +39,16 @@ async def async_call_llm(session: aiohttp.ClientSession, system_prompt: str, use
                         usage.get("completion_tokens", 0)
                     )
                 
-                message = data.get("choices", [{}])[0].get("message", {})
-                content = message.get("content", "")
+                choices = data.get("choices")
+                if not choices or not isinstance(choices, list):
+                    raise ValueError(f"API 返回无效的 choices: {data}")
+                choice = choices[0]
+                if not isinstance(choice, dict):
+                    raise ValueError(f"API 返回无效的 choice 结构: {choice}")
+                message = choice.get("message")
+                if not isinstance(message, dict):
+                    raise ValueError(f"API 返回无效的 message 结构: {message}")
+                content = message.get("content")
                 if not content:
                     raise ValueError("API 返回的数据体为空 (Empty content)")
                 return content

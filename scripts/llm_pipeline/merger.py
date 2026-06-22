@@ -38,8 +38,18 @@ async def tree_reduce(partials: list, session: aiohttp.ClientSession, config, te
         return index, res
         
     tasks = [reduce_group(g, i) for i, g in enumerate(groups)]
-    new_partials_with_index = await asyncio.gather(*tasks)
+    raw_results = await asyncio.gather(*tasks, return_exceptions=True)
     
+    new_partials_with_index = []
+    for i, res in enumerate(raw_results):
+        if isinstance(res, Exception):
+            print(f"  [警告] 树状合并中间层分组 {i+1} 失败，已跳过: {res}")
+            continue
+        new_partials_with_index.append(res)
+        
+    if not new_partials_with_index:
+        raise RuntimeError("Tree Reduce 所有分支均失败，合并中止")
+        
     new_partials_with_index.sort(key=lambda x: x[0])
     new_partials = [p[1] for p in new_partials_with_index]
     
@@ -65,8 +75,18 @@ async def run_pipeline(text: str, chunks: list, system_prompt: str, config, tele
                 return await map_chunk(i, chunk, session, config, telemetry)
                 
         tasks = [bounded_map(i, chunk) for i, chunk in enumerate(chunks)]
-        results = await asyncio.gather(*tasks)
+        raw_results = await asyncio.gather(*tasks, return_exceptions=True)
         
+        results = []
+        for i, res in enumerate(raw_results):
+            if isinstance(res, Exception):
+                print(f"  [警告] 第 {i+1} 块内容处理失败，已跳过以保护整体进度: {res}")
+                continue
+            results.append(res)
+            
+        if not results:
+            raise RuntimeError("Map 阶段所有任务均失败，管线中止")
+            
         results.sort(key=lambda x: x[0])
         partials = [p[1] for p in results]
         

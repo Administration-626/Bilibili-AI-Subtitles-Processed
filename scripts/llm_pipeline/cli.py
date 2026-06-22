@@ -44,7 +44,8 @@ def main():
         config = load_config(args)
         
         if args.input == "-":
-            text = sys.stdin.read()
+            import io
+            text = io.TextIOWrapper(sys.stdin.buffer, encoding='utf-8').read()
         else:
             if not os.path.exists(args.input):
                 raise RuntimeError(f"输入文件不存在：{args.input}")
