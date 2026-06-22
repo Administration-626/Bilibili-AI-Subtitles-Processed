@@ -1,0 +1,19 @@
+# 忽略原始大文件和临时文件
+raw/
+transcripts/
+
+# 忽略环境变量和 API Key 等机密信息
+.env
+.env.local
+.env.*.local
+
+# 忽略 Python 缓存和虚拟环境
+__pycache__/
+*.pyc
+.venv/
+venv/
+env/
+
+# 忽略系统文件
+.DS_Store
+Thumbs.db
