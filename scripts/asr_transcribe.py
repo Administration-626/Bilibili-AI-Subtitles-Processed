@@ -42,18 +42,35 @@ def get_config(args) -> tuple[str, str, str]:
 def transcribe_file(file_path: Path, api_url: str, model: str, session: requests.Session) -> str:
     start_time = time.time()
     
-    with open(file_path, "rb") as f:
-        files = {"file": (file_path.name, f)}
-        data = {"model": model}
-        response = session.post(api_url, files=files, data=data, timeout=300)
+    max_retries = 5
+    for attempt in range(max_retries):
+        with open(file_path, "rb") as f:
+            files = {"file": (file_path.name, f)}
+            data = {"model": model}
+            try:
+                response = session.post(api_url, files=files, data=data, timeout=300)
+            except Exception as e:
+                print(f"\n请求异常: {e}", file=sys.stderr)
+                if attempt < max_retries - 1:
+                    print(f"等待 5 秒后重试... ({attempt + 1}/{max_retries})", file=sys.stderr)
+                    time.sleep(5)
+                    continue
+                sys.exit(1)
 
-    if response.status_code == 401:
-        print(f"\n错误：HTTP 401 (API Key 无效或未授权)", file=sys.stderr)
-        sys.exit(1)
-    if response.status_code != 200:
-        print(f"\n错误：API 返回 {response.status_code}", file=sys.stderr)
-        print(f"响应：{response.text}", file=sys.stderr)
-        sys.exit(1)
+        if response.status_code == 401:
+            print(f"\n错误：HTTP 401 (API Key 无效或未授权)", file=sys.stderr)
+            sys.exit(1)
+            
+        if response.status_code != 200:
+            print(f"\n错误：API 返回 {response.status_code}", file=sys.stderr)
+            print(f"响应：{response.text}", file=sys.stderr)
+            if attempt < max_retries - 1:
+                print(f"等待 5 秒后重试... ({attempt + 1}/{max_retries})", file=sys.stderr)
+                time.sleep(5)
+                continue
+            sys.exit(1)
+            
+        break
 
     result = response.json()
     elapsed = time.time() - start_time
