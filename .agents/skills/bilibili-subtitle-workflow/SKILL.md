@@ -40,13 +40,15 @@ python scripts/extract_subtitles.py
 ```
 输出：`视频名_extracted.txt` 或 `视频名_timestamped.txt`
 
-### Step 3：在 agent 会话里整理
+### Step 3：在 agent 会话里原生整理
 直接对 agent 说：
 ```
 整理 ./视频名_extracted.txt，输出结构化纪要
 整理 ./视频名_extracted.txt，直播闲聊模式
 整理 ./视频名_timestamped.txt，做细节版观看笔记
 ```
+
+> **核心逻辑**：Agent **必须直接使用 `view_file` 工具读取长文本**，并利用自身的顶级大模型能力完成要点提取和排版。因为现代模型的长上下文能力足以应对几万字的文本，无需也**绝对禁止**额外写代码或调用外部 API。
 
 ---
 
@@ -80,34 +82,12 @@ python scripts/asr_transcribe.py \
 
 ---
 
-## llm_summarize.py（批量自动化可选）
+## 废弃声明：llm_summarize.py（禁止使用）
 
-> 正常使用直接在 agent 会话里说即可，无需调用此脚本。
-> 仅在需要**完全无人值守批量处理**时使用（如定时任务）。
-
-支持四种模式：
-
-| 模式 | 参数 | 适用内容 |
-|------|------|---------|
-| 通用结构化纪要 | `--mode general`（默认）| 讲课、访谈、播客、视频解说 |
-| 直播闲聊专用 | `--mode livestream` | 多人连麦、直播、弹幕互动多 |
-| 细节版观看笔记 | `--mode detail` | 想还原视频细节、做精读笔记 |
-| 技术教学版文档 | `--mode tech` | 编程教程、软件操作、技术分享 |
-
-```bash
-export LLM_API_KEY="your_api_key_here"
-# LLM_BASE_URL 默认 https://api.siliconflow.cn/v1
-# LLM_MODEL    默认 Qwen/Qwen3-8B（硅基流动免费）
-
-python scripts/llm_summarize.py \
-  --input "视频名_extracted.txt" \
-  --output "视频名_整理稿.md" \
-  --mode general           # general / livestream / detail / tech
-  # --workers 3            # 遇到 429 限流时调低并发数（默认 5）
-  # --chunk-size 6000      # Token 级切片阈值（默认 6000 tokens）
-```
-
-> **V4 引擎特性**：脚本底层已升级为全异步 `aiohttp` + `tiktoken` 精确 Token 切分 + 树状递归合并，支持任意长度字幕无损处理。运行结束后会打印 Token 消费财报。
+> **⚠️ 架构红线 (Architecture Rule)**：
+> 过去版本中包含了 `llm_summarize.py` 脚本，用于调用外部小参数模型（如 7B/8B）进行文本总结。
+> **现在严格禁止 Agent 运行该脚本或编写类似的 LLM API 包装器。**
+> Agent 自身即为顶层大语言模型（Native Intelligence）。面对任何长文本提取、观点提炼、结构化纪要任务，Agent **必须直接读取文本 (`view_file`) 并利用自身的上下文窗口进行原生处理**。将核心智能任务下放给外部低端模型 API 属于严重的“执行层短视（Execution Myopia）”。
 
 ---
 
@@ -118,11 +98,7 @@ python scripts/llm_summarize.py \
 | `ASR_API_KEY` | ASR 转写 Key（必填）| — |
 | `ASR_BASE_URL` | ASR 接口地址 | `https://api.siliconflow.cn/v1` |
 | `ASR_MODEL` | ASR 模型 | `TeleAI/TeleSpeechASR` |
-| `LLM_API_KEY` | LLM 摘要 Key（必填）| — |
-| `LLM_BASE_URL` | LLM 接口地址 | `https://api.siliconflow.cn/v1` |
-| `LLM_MODEL` | LLM 模型 | `Qwen/Qwen3-8B` |
 
-> 硅基流动同一个 API Key 同时支持 ASR 和 LLM，ASR_API_KEY 和 LLM_API_KEY 可以设成同一个值。
 > API Key 在 [cloud.siliconflow.cn](https://cloud.siliconflow.cn) 申请。
 
 ---
