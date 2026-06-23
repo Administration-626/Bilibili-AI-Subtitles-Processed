@@ -17,3 +17,6 @@ env/
 # 忽略系统文件
 .DS_Store
 Thumbs.db
+
+# 忽略测试报告
+tests/*_report.md
