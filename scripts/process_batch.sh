@@ -1,25 +1,31 @@
 #!/bin/bash
-FILES=(
-  "raw/xiaofan/【小饭聊二次元】小饭的网文往事_音频.mp4"
-  "raw/xiaofan/【小饭聊二次元】小饭聊巅峰之智游戏_音频.mp4"
-  "raw/xiaofan/【小饭聊二次元】聊聊自己写过的网文_音频.mp4"
-  "raw/xiaofan/【小饭聊二次元】闲聊网文、废案、地狱乐_音频.mp4"
+# scripts/process_batch.sh — 小饭音频批量转写(兼容 Shim)
+# 已迁移至通用 scripts/audio_to_text.sh,此为兼容入口。
+# 用法: 
+#   scripts/process_batch.sh                          # 处理默认文件列表
+#   scripts/process_batch.sh raw/xiaofan/*.mp4        # 处理指定文件
+#   scripts/process_batch.sh --dry-run                # 预览默认文件列表
+
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+INPUT_DIR="${INPUT_DIR:-raw/xiaofan}"
+
+DEFAULT_FILES=(
+  "$INPUT_DIR/【小饭聊二次元】小饭的网文往事_音频.mp4"
+  "$INPUT_DIR/【小饭聊二次元】小饭聊巅峰之智游戏_音频.mp4"
+  "$INPUT_DIR/【小饭聊二次元】聊聊自己写过的网文_音频.mp4"
+  "$INPUT_DIR/【小饭聊二次元】闲聊网文、废案、地狱乐_音频.mp4"
 )
 
-for file in "${FILES[@]}"; do
-  echo "==================================="
-  echo "Processing $file..."
-  base=$(basename "$file" .mp4)
-  
-  # Extract audio and segment into 30 min chunks
-  echo "Extracting and segmenting audio..."
-  ffmpeg -y -i "$file" -vn -ar 16000 -ac 1 -b:a 64k -f segment -segment_time 1800 -c:a libmp3lame "raw/xiaofan/${base}_seg_%03d.mp3" < /dev/null
-  
-  # Transcribe and merge
-  echo "Transcribing segments for $base..."
-  python3 scripts/asr_transcribe.py --input "raw/xiaofan/${base}_seg_*.mp3" --output "raw/xiaofan/${base}_extracted.txt" --merge
-  
-  # Cleanup segments
-  rm "raw/xiaofan/${base}_seg_"*.mp3
+# 检查参数中是否有文件(非选项参数)
+has_files=false
+for arg in "$@"; do
+  [[ "$arg" != -* ]] && has_files=true && break
 done
-echo "All files processed."
+
+if [[ "$has_files" == false ]]; then
+  exec scripts/audio_to_text.sh --segment-time 1800 --reencode "$@" "${DEFAULT_FILES[@]}"
+else
+  exec scripts/audio_to_text.sh --segment-time 1800 --reencode "$@"
+fi

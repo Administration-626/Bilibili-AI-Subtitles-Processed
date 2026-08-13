@@ -5,12 +5,12 @@ import re
 import time
 import random
 
-# 替换为你抓取到的 Cookie
-YOUR_COOKIE = "SCF=ArVSGXPI3Wn3cQi3QISzA8pN_NA5MPQtDBezdKYvNnrLZuTxXVjheEK_rdkL1T0tAPX3HhYVRjrqYF76ZSv7C7E.; SUB=_2A25HPqmbDeRhGeFH61EU9yjMwzuIHXVkNaNTrDV6PUJbktAbLW_MkW1NeCd9WRRE3PE18AraG4lGw2g1CnP4MSvR; SUBP=0033WrSXqPxfM725Ws9jqgMF55529P9D9WhE5_HUWy6QWnFJEGA7mw-C5NHD95QN1K50SKMcehnNWs4DqcjMi--NiK.Xi-2Ri--ciKnRi-zNS0.7e0-NSo5RS7tt; SSOLoginState=1782241739; ALF=1784833739; WEIBOCN_FROM=1110006030; MLOGIN=1; _T_WM=83429517315; XSRF-TOKEN=377d42; M_WEIBOCN_PARAMS=luicode%3D10000011%26lfid%3D231583%26launchid%3D10000360-page_H5%26uicode%3D10000011%26fid%3D1076036231346896"
+# 从环境变量读取微博 Cookie(禁止硬编码明文!)
+YOUR_COOKIE = os.environ.get("WEIBO_COOKIE")
 
-UID = "6231346896"
+UID = os.environ.get("WEIBO_UID", "6231346896")
 BASE_URL = f"https://m.weibo.cn/api/container/getIndex?type=uid&value={UID}&containerid=107603{UID}"
-OUTPUT_FILE = "/home/tan/Bilibili-AI-Subtitles-Processed/local_file/小饭-微博-自动抓取.md"
+OUTPUT_FILE = os.environ.get("WEIBO_OUTPUT", "local_file/小饭-微博-自动抓取.md")
 
 def clean_html(raw_html):
     cleanr = re.compile('<.*?>')

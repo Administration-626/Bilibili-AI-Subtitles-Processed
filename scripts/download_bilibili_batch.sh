@@ -3,7 +3,7 @@
 # Bilibili 批量音频下载与转录脚本
 # 依赖：BBDown, python3 (带 asr_transcribe.py)
 
-WORK_DIR="/home/tan/Bilibili-AI-Subtitles-Processed/raw/xiaofan_clips"
+WORK_DIR="${WORK_DIR:-raw/xiaofan_clips}"
 mkdir -p "$WORK_DIR"
 
 # 检查 BBDown 是否安装

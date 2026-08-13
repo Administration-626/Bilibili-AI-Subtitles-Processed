@@ -1,23 +1,27 @@
 #!/bin/bash
-FILES=(
-  "raw/xiaofan/小饭中年事件簿--2025.08.13--一辈子在工作_P1_小饭中年事件簿--2025.08.13--_音频.mp4"
-  "raw/xiaofan/小饭中年事件簿--2025.08.13--一辈子在工作_P2_社保_音频.mp4"
+# scripts/process_batch_2.sh — 小饭音频批量转写(兼容 Shim)
+# 已迁移至通用 scripts/audio_to_text.sh,此为兼容入口。
+# 用法:
+#   scripts/process_batch_2.sh                          # 处理默认文件列表
+#   scripts/process_batch_2.sh raw/xiaofan/*.mp4        # 处理指定文件
+
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+INPUT_DIR="${INPUT_DIR:-raw/xiaofan}"
+
+DEFAULT_FILES=(
+  "$INPUT_DIR/小饭中年事件簿--2025.08.13--一辈子在工作_P1_小饭中年事件簿--2025.08.13--_音频.mp4"
+  "$INPUT_DIR/小饭中年事件簿--2025.08.13--一辈子在工作_P2_社保_音频.mp4"
 )
 
-for file in "${FILES[@]}"; do
-  echo "==================================="
-  echo "Processing $file..."
-  base=$(basename "$file" .mp4)
-  
-  # Extract audio and segment into 30 min chunks
-  echo "Extracting and segmenting audio..."
-  ffmpeg -y -i "$file" -vn -ar 16000 -ac 1 -b:a 64k -f segment -segment_time 1800 -c:a libmp3lame "raw/xiaofan/${base}_seg_%03d.mp3" < /dev/null
-  
-  # Transcribe and merge
-  echo "Transcribing segments for $base..."
-  python3 scripts/asr_transcribe.py --input "raw/xiaofan/${base}_seg_*.mp3" --output "raw/xiaofan/${base}_extracted.txt" --merge
-  
-  # Cleanup segments
-  rm "raw/xiaofan/${base}_seg_"*.mp3
+has_files=false
+for arg in "$@"; do
+  [[ "$arg" != -* ]] && has_files=true && break
 done
-echo "All files processed."
+
+if [[ "$has_files" == false ]]; then
+  exec scripts/audio_to_text.sh --segment-time 1800 --reencode "$@" "${DEFAULT_FILES[@]}"
+else
+  exec scripts/audio_to_text.sh --segment-time 1800 --reencode "$@"
+fi

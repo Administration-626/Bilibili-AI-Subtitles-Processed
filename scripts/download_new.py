@@ -1,7 +1,7 @@
 import yt_dlp
 import os
 
-cookie_path = '/tmp/bili_cookie.txt'
+cookie_path = os.environ.get("BILI_COOKIE_PATH", "/tmp/bili_cookie.txt")
 try:
     with open(cookie_path, 'r') as f:
         cookie_str = f.read().strip()
@@ -11,7 +11,7 @@ except Exception as e:
 
 ydl_opts = {
     'format': 'm4a/bestaudio/best',
-    'outtmpl': 'raw/xiaofan_new_clips/%(title)s.%(ext)s',
+    'outtmpl': os.environ.get("BILI_OUTPUT_DIR", "raw/xiaofan_new_clips") + '/%(title)s.%(ext)s',
     'http_headers': {
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         'Cookie': cookie_str,
@@ -24,7 +24,7 @@ ydl_opts = {
     'quiet': False
 }
 
-with open('raw/xiaofan_new_clips/urls.txt', 'r') as f:
+with open(os.environ.get("BILI_OUTPUT_DIR", "raw/xiaofan_new_clips") + '/urls.txt', 'r') as f:
     urls = [line.strip() for line in f if line.strip()]
 
 print(f"Starting download of {len(urls)} videos with secure cookies...")

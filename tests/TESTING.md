@@ -8,8 +8,25 @@
   - `category`：测试的知识模块（A股、职场、社保宏观、ACG前史等）
   - `question`：模拟弹幕网友的真实提问
   - `original_reference`：基准答案（Ground Truth），提取自小饭的真实直播录音和文稿，包含了该问题的**核心立意**和**专属原话**。
+- **`test_cases_extended.json`**：80 道扩展测试题（与 `test_cases.json` 同结构，额外含 `answer`/`video`/`timestamp`/`source_id` 字段），覆盖更多场景。
 
-## 2. 闭卷测试流程 (Workflow)
+## 2. 运行测试
+
+```bash
+# 从基础 15 题选第 5 题
+python3 test_persona.py --test-file tests/test_cases.json --test-id 5
+
+# 从扩展 80 题选第 1 题
+python3 test_persona.py --test-file tests/test_cases_extended.json
+
+# 列出所有用例
+python3 test_persona.py --test-file tests/test_cases_extended.json --list
+
+# 自定义问题
+python3 test_persona.py --question "你的问题"
+```
+
+## 3. 闭卷测试流程 (Workflow)
 进行测试时，需要采用**双模型校验（LLM-as-a-Judge）**或**人工比对**的方案：
 
 ### Step 1: 角色扮演生成 (Generation)
@@ -32,7 +49,7 @@
 #### 维度三：防串戏测试 (Context Isolation) - 权重 20%
 - 当涉及非股市话题（如二次元魔改、买烂尾楼、职场）时，模型**绝对不能**使用“渣男战法”、“美少女ETF”、“利润垫”等炒股专用词汇。如果出现强行缝合，判定为严重违规。
 
-## 3. 自动化测试脚本示例（Python伪代码）
+## 4. 自动化测试脚本示例（Python伪代码）
 未来如果需要全自动化跑分，可以参考以下双 Agent 架构逻辑：
 
 ```python
@@ -66,5 +83,5 @@ for case in cases:
     print(f"Case {case['id']} 评分: {score}")
 ```
 
-## 4. 历史测试记录归档
+## 5. 历史测试记录归档
 早期的闭卷手工测试报告已归档在 `xiaofan_persona_test_report.md` 中（已被 Gitignore 忽略跟踪）。后续大版本的 Prompt 升级前，必须完整回归跑通这 15 道核心测试题，确保核心人设不发生偏移。

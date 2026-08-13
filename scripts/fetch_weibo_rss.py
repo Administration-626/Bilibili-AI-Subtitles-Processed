@@ -5,9 +5,9 @@ import re
 from datetime import datetime
 
 # 小饭的微博 UID
-UID = "6231346896"
+UID = os.environ.get("WEIBO_UID", "6231346896")
 RSS_URL = f"https://rsshub.app/weibo/user/{UID}"
-OUTPUT_FILE = "/home/tan/Bilibili-AI-Subtitles-Processed/local_file/小饭-微博-自动抓取.md"
+OUTPUT_FILE = os.environ.get("WEIBO_OUTPUT", "local_file/小饭-微博-自动抓取.md")
 
 def clean_html(raw_html):
     cleanr = re.compile('<.*?>')
